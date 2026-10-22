@@ -32,6 +32,22 @@ impl Board {
         })
     }
 
+    /// Attempts to rotate `piece`, trying SRS wall kick offsets in order
+    /// until one lands in a valid position. Returns `None` if none do.
+    pub fn try_rotate(&self, piece: &Piece, clockwise: bool) -> Option<Piece> {
+        let mut rotated = *piece;
+        if clockwise {
+            rotated.rotate_cw();
+        } else {
+            rotated.rotate_ccw();
+        }
+
+        crate::piece::wall_kicks(piece.kind(), piece.rotation(), rotated.rotation())
+            .into_iter()
+            .map(|(dx, dy)| rotated.moved_by(dx, dy))
+            .find(|kicked| self.is_valid_position(kicked))
+    }
+
     pub fn lock_piece(&mut self, piece: &Piece) {
         for (col, row) in piece.cells() {
             self.cells[row as usize][col as usize] = Some(piece.kind());

@@ -119,6 +119,10 @@ impl Piece {
         self.kind
     }
 
+    pub fn rotation(&self) -> u8 {
+        self.rotation
+    }
+
     /// The piece's 4 occupied cells in board coordinates.
     pub fn cells(&self) -> [(i32, i32); 4] {
         let shape = &SHAPES[self.kind as usize][self.rotation as usize];
@@ -140,4 +144,61 @@ impl Piece {
     pub fn rotate_ccw(&mut self) {
         self.rotation = (self.rotation + 3) % 4;
     }
+}
+
+// SRS wall kick offsets, tested in order, for each rotation transition.
+// Offsets are given in the standard SRS convention (+x right, +y up); since
+// this board's row coordinate grows downward, the y component must be
+// negated when applied to a `Piece`'s (x, y).
+//
+// Transition order: 0->R, R->0, R->2, 2->R, 2->L, L->2, L->0, 0->L.
+const JLSTZ_KICKS: [[(i32, i32); 5]; 8] = [
+    [(0, 0), (-1, 0), (-1, 1), (0, -2), (-1, -2)],
+    [(0, 0), (1, 0), (1, -1), (0, 2), (1, 2)],
+    [(0, 0), (1, 0), (1, -1), (0, 2), (1, 2)],
+    [(0, 0), (-1, 0), (-1, 1), (0, -2), (-1, -2)],
+    [(0, 0), (1, 0), (1, 1), (0, -2), (1, -2)],
+    [(0, 0), (-1, 0), (-1, -1), (0, 2), (-1, 2)],
+    [(0, 0), (-1, 0), (-1, -1), (0, 2), (-1, 2)],
+    [(0, 0), (1, 0), (1, 1), (0, -2), (1, -2)],
+];
+
+const I_KICKS: [[(i32, i32); 5]; 8] = [
+    [(0, 0), (-2, 0), (1, 0), (-2, -1), (1, 2)],
+    [(0, 0), (2, 0), (-1, 0), (2, 1), (-1, -2)],
+    [(0, 0), (-1, 0), (2, 0), (-1, 2), (2, -1)],
+    [(0, 0), (1, 0), (-2, 0), (1, -2), (-2, 1)],
+    [(0, 0), (2, 0), (-1, 0), (2, 1), (-1, -2)],
+    [(0, 0), (-2, 0), (1, 0), (-2, -1), (1, 2)],
+    [(0, 0), (1, 0), (-2, 0), (1, -2), (-2, 1)],
+    [(0, 0), (-1, 0), (2, 0), (-1, 2), (2, -1)],
+];
+
+fn kick_transition_index(from: u8, to: u8) -> usize {
+    match (from, to) {
+        (0, 1) => 0,
+        (1, 0) => 1,
+        (1, 2) => 2,
+        (2, 1) => 3,
+        (2, 3) => 4,
+        (3, 2) => 5,
+        (3, 0) => 6,
+        (0, 3) => 7,
+        _ => unreachable!("not a single-step rotation: {from} -> {to}"),
+    }
+}
+
+/// The wall kick offsets to try, in order, for rotating `kind` from `from` to `to`.
+/// Offsets are already converted to this board's (x, row) convention.
+pub fn wall_kicks(kind: PieceType, from: u8, to: u8) -> [(i32, i32); 5] {
+    if kind == PieceType::O {
+        return [(0, 0); 5];
+    }
+
+    let table = if kind == PieceType::I {
+        &I_KICKS
+    } else {
+        &JLSTZ_KICKS
+    };
+    table[kick_transition_index(from, to)].map(|(dx, dy)| (dx, -dy))
 }
