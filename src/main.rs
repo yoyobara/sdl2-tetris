@@ -1,11 +1,15 @@
 use std::time::Duration;
 
+mod board;
+mod piece;
+
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::pixels::Color;
 
-const WINDOW_WIDTH: u32 = 400;
-const WINDOW_HEIGHT: u32 = 800;
+use piece::{Piece, PieceType};
+
+const WINDOW_WIDTH: u32 = board::COLS * board::CELL_SIZE;
+const WINDOW_HEIGHT: u32 = board::ROWS * board::CELL_SIZE;
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -26,6 +30,9 @@ fn main() -> Result<(), String> {
 
     let mut event_pump = sdl_context.event_pump()?;
 
+    let board = board::Board::new();
+    let current_piece = Piece::new(PieceType::T, 3, 0);
+
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {
@@ -38,8 +45,8 @@ fn main() -> Result<(), String> {
             }
         }
 
-        canvas.set_draw_color(Color::RGB(20, 20, 30));
-        canvas.clear();
+        board.draw(&mut canvas)?;
+        board.draw_piece(&mut canvas, &current_piece)?;
         canvas.present();
 
         std::thread::sleep(Duration::from_millis(1000 / 60));
