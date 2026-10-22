@@ -61,6 +61,16 @@ fn main() -> Result<(), String> {
                         current_piece = moved;
                     }
                 }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Up),
+                    ..
+                } => {
+                    let mut rotated = current_piece;
+                    rotated.rotate_cw();
+                    if board.is_valid_position(&rotated) {
+                        current_piece = rotated;
+                    }
+                }
                 _ => {}
             }
         }
