@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 mod board;
 mod piece;
@@ -10,6 +10,7 @@ use piece::{Piece, PieceType};
 
 const WINDOW_WIDTH: u32 = board::COLS * board::CELL_SIZE;
 const WINDOW_HEIGHT: u32 = board::ROWS * board::CELL_SIZE;
+const FALL_INTERVAL: Duration = Duration::from_millis(500);
 
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
@@ -31,7 +32,8 @@ fn main() -> Result<(), String> {
     let mut event_pump = sdl_context.event_pump()?;
 
     let board = board::Board::new();
-    let current_piece = Piece::new(PieceType::T, 3, 0);
+    let mut current_piece = Piece::new(PieceType::T, 3, 0);
+    let mut last_fall = Instant::now();
 
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -43,6 +45,14 @@ fn main() -> Result<(), String> {
                 } => break 'running,
                 _ => {}
             }
+        }
+
+        if last_fall.elapsed() >= FALL_INTERVAL {
+            let fallen = current_piece.moved_by(0, 1);
+            if board.is_valid_position(&fallen) {
+                current_piece = fallen;
+            }
+            last_fall = Instant::now();
         }
 
         board.draw(&mut canvas)?;

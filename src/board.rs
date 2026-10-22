@@ -22,6 +22,16 @@ impl Board {
         }
     }
 
+    pub fn is_valid_position(&self, piece: &Piece) -> bool {
+        piece.cells().iter().all(|&(col, row)| {
+            col >= 0
+                && col < COLS as i32
+                && row >= 0
+                && row < ROWS as i32
+                && self.cells[row as usize][col as usize].is_none()
+        })
+    }
+
     pub fn draw(&self, canvas: &mut WindowCanvas) -> Result<(), String> {
         let width = (COLS * CELL_SIZE) as i32;
         let height = (ROWS * CELL_SIZE) as i32;

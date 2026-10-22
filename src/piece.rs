@@ -89,6 +89,7 @@ const SHAPES: [[[(i8, i8); 4]; 4]; 7] = [
     ],
 ];
 
+#[derive(Clone, Copy)]
 pub struct Piece {
     kind: PieceType,
     rotation: u8,
@@ -114,6 +115,14 @@ impl Piece {
     pub fn cells(&self) -> [(i32, i32); 4] {
         let shape = &SHAPES[self.kind as usize][self.rotation as usize];
         shape.map(|(row, col)| (self.x + col as i32, self.y + row as i32))
+    }
+
+    pub fn moved_by(&self, dx: i32, dy: i32) -> Piece {
+        Piece {
+            x: self.x + dx,
+            y: self.y + dy,
+            ..*self
+        }
     }
 
     pub fn rotate_cw(&mut self) {
