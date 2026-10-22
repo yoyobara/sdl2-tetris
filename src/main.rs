@@ -31,8 +31,8 @@ fn main() -> Result<(), String> {
 
     let mut event_pump = sdl_context.event_pump()?;
 
-    let board = board::Board::new();
-    let mut current_piece = Piece::new(PieceType::T, 3, 0);
+    let mut board = board::Board::new();
+    let mut current_piece = Piece::new(PieceType::random(), 3, 0);
     let mut last_fall = Instant::now();
 
     'running: loop {
@@ -51,6 +51,13 @@ fn main() -> Result<(), String> {
             let fallen = current_piece.moved_by(0, 1);
             if board.is_valid_position(&fallen) {
                 current_piece = fallen;
+            } else {
+                board.lock_piece(&current_piece);
+                current_piece = Piece::new(PieceType::random(), 3, 0);
+                if !board.is_valid_position(&current_piece) {
+                    // No room for a new piece: start over.
+                    board.clear();
+                }
             }
             last_fall = Instant::now();
         }

@@ -32,6 +32,18 @@ impl Board {
         })
     }
 
+    pub fn lock_piece(&mut self, piece: &Piece) {
+        for (col, row) in piece.cells() {
+            self.cells[row as usize][col as usize] = Some(piece.kind());
+        }
+    }
+
+    pub fn clear(&mut self) {
+        for row in self.cells.iter_mut() {
+            row.fill(None);
+        }
+    }
+
     pub fn draw(&self, canvas: &mut WindowCanvas) -> Result<(), String> {
         let width = (COLS * CELL_SIZE) as i32;
         let height = (ROWS * CELL_SIZE) as i32;

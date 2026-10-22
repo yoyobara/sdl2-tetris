@@ -35,6 +35,14 @@ const PIECE_TYPES: [PieceType; 7] = [
     PieceType::L,
 ];
 
+impl PieceType {
+    pub fn random() -> PieceType {
+        use rand::seq::IndexedRandom;
+
+        *PIECE_TYPES.choose(&mut rand::rng()).unwrap()
+    }
+}
+
 // SRS rotation states, per piece type: 4 rotations x 4 cells, each cell as (row, col)
 // in a 4x4 bounding box (row 0 = top).
 const SHAPES: [[[(i8, i8); 4]; 4]; 7] = [
