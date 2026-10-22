@@ -4,7 +4,7 @@ mod board;
 mod piece;
 
 use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
+use sdl2::keyboard::{Keycode, Scancode};
 
 use piece::{Piece, PieceType};
 
@@ -81,7 +81,13 @@ fn main() -> Result<(), String> {
             }
         }
 
-        if last_fall.elapsed() >= FALL_INTERVAL {
+        let fall_interval = if event_pump.keyboard_state().is_scancode_pressed(Scancode::Down) {
+            FALL_INTERVAL / 2
+        } else {
+            FALL_INTERVAL
+        };
+
+        if last_fall.elapsed() >= fall_interval {
             let fallen = current_piece.moved_by(0, 1);
             if board.is_valid_position(&fallen) {
                 current_piece = fallen;
