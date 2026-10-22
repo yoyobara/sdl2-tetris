@@ -43,6 +43,24 @@ fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
+                Event::KeyDown {
+                    keycode: Some(Keycode::Left),
+                    ..
+                } => {
+                    let moved = current_piece.moved_by(-1, 0);
+                    if board.is_valid_position(&moved) {
+                        current_piece = moved;
+                    }
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::Right),
+                    ..
+                } => {
+                    let moved = current_piece.moved_by(1, 0);
+                    if board.is_valid_position(&moved) {
+                        current_piece = moved;
+                    }
+                }
                 _ => {}
             }
         }
